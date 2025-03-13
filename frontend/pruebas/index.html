@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat en Tiempo Real</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #messages { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; }
+        .message { padding: 5px; border-bottom: 1px solid #ddd; }
+        .own { color: blue; font-weight: bold; }
+        .other { color: green; }
+    </style>
+</head>
+<body>
+
+    <h2>Chat en Tiempo Real</h2>
+
+    <label for="chatId">Chat ID:</label>
+    <input type="number" id="chatId" placeholder="ID del chat">
+    <button onclick="joinChat()">Unirse</button>
+
+    <div id="messages"></div>
+
+    <input type="text" id="messageInput" placeholder="Escribe un mensaje...">
+    <button onclick="sendMessage()">Enviar</button>
+
+    <script>
+        // Conectar con WebSocket y enviar el token de autenticación
+        const socket = io("ws://localhost:6001", {
+            auth: { token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiaWF0IjoxNzM3NTUyMzY3LCJleHAiOjE3Mzc2Mzg3Njd9._OiX51PDIJK8AvbDYAv2k2_3pEjvR-agoprkodVfyV4" } // Reemplaza con un token válido
+        });
+
+        let chatId = null; // ID del chat actual
+
+        // Evento de conexión exitosa
+        socket.on("connect", () => {
+            console.log("✅ Conectado al WebSocket con ID:", socket.id);
+        });
+
+        // Evento de error en WebSocket
+        socket.on("connect_error", (err) => {
+            console.error("❌ Error en la conexión:", err.message);
+        });
+
+        // Unirse a un chat
+        function joinChat() {
+            chatId = document.getElementById("chatId").value;
+            if (chatId) {
+                socket.emit("joinChat", chatId);
+                console.log(`📌 Te uniste al chat ${chatId}`);
+            } else {
+                alert("Introduce un Chat ID válido.");
+            }
+        }
+
+        // Enviar mensaje
+        function sendMessage() {
+            const messageInput = document.getElementById("messageInput");
+            const message = messageInput.value.trim();
+
+            if (message && chatId) {
+                socket.emit("message", { chat_id: chatId, content: message });
+                messageInput.value = ""; // Limpiar el input
+            }
+        }
+
+        // Escuchar mensajes entrantes
+        socket.on("message", (data) => {
+            console.log("📩 Mensaje recibido:", data);
+
+            const messagesDiv = document.getElementById("messages");
+            const messageElement = document.createElement("div");
+            messageElement.classList.add("message");
+
+            // Diferenciar mensajes del usuario autenticado
+            if (data.sender_id === socket.user_id) {
+                messageElement.classList.add("own");
+                messageElement.innerHTML = `<strong>Tú:</strong> ${data.content}`;
+            } else {
+                messageElement.classList.add("other");
+                messageElement.innerHTML = `<strong>Usuario ${data.sender_id}:</strong> ${data.content}`;
+            }
+
+            messagesDiv.appendChild(messageElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight; // Auto-scroll
+        });
+    </script>
+
+</body>
+</html>

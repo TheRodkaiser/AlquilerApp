@@ -1,0 +1,6 @@
+1️⃣ Mostrar las reseñas en el frontend.
+2️⃣ Permitir al usuario responder a una reseña.
+3️⃣ Añadir un sistema de reportes para reseñas ofensivas.
+4️⃣ Crear un sistema de recomendación basado en las calificaciones.
+5. Verificación de los usuarios
+6. 

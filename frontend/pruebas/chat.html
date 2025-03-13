@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat en Tiempo Real</title>
+  <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+</head>
+<body>
+  <h2>Chat en Tiempo Real</h2>
+  <input type="text" id="messageInput" placeholder="Escribe tu mensaje..." />
+  <button onclick="sendMessage()">Enviar</button>
+  <ul id="messages"></ul>
+
+  <script>
+    const socket = io("http://localhost:6001");
+
+    const chatId = 1; // ID del chat en el que estás
+    socket.emit("joinChat", chatId);
+
+    socket.on("message", (msg) => {
+      const messagesList = document.getElementById("messages");
+      const newMessage = document.createElement("li");
+      newMessage.textContent = msg.content;
+      messagesList.appendChild(newMessage);
+    });
+
+    function sendMessage() {
+      const messageInput = document.getElementById("messageInput");
+      const message = messageInput.value;
+
+      socket.emit("message", { chat_id: chatId, sender_id: 3, content: message });
+
+      messageInput.value = "";
+    }
+  </script>
+</body>
+</html>
